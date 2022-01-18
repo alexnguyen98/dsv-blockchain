@@ -1,6 +1,8 @@
 import EventEmitter = require('events');
 import Logger from './utils/Logger';
 import Block from './Block';
+import Peer from './Peer';
+import { PACKET_TYPES } from './types/Packet';
 
 /**
  * Blockchain representation
@@ -74,22 +76,15 @@ class Chain extends EventEmitter {
   /**
    * Add a block to chain
    */
-  add(block: Block) {
-    // Handle block collision
-    if (
-      block.height === this.blocks.length &&
-      block.previousHash === this.getLatestBlock().previousHash
-    ) {
-      // Check which timestamp is older
-      if (block.timestamp < this.getLatestBlock().timestamp) {
-        this.blocks[this.blocks.length - 1] = block;
-      } else if (block.timestamp === this.getLatestBlock().timestamp) {
-        // We have a fork to deal with :(
-        console.log('FORKKKK');
-      }
-    } else {
-      this.blocks.push(block);
+  add(block: Block, peer?: Peer) {
+    // Two competing blocks, fork situation
+    if (block.previousHash === this.getLatestBlock().previousHash) {
+      console.log('fork situation');
+      return;
     }
+
+    this.blocks.push(block);
+    this.emit('stop');
   }
 
   /**
@@ -111,6 +106,13 @@ class Chain extends EventEmitter {
    */
   handleBlock(block: Block) {
     this.blocks.push(block);
+  }
+
+  /**
+   * Handle resync
+   */
+  resync() {
+    this.blocks = [Block.createGenesisBlock()];
   }
 }
 

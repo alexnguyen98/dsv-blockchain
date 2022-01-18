@@ -38,12 +38,7 @@ class Block {
         this.txs.push(tx);
     }
     getPayload() {
-        let payload = '';
-        payload += this.timestamp;
-        for (const tx of this.txs) {
-            payload += tx.hash;
-        }
-        return payload;
+        return this.previousHash + this.timestamp + JSON.stringify(this.txs);
     }
 }
 exports.default = Block;

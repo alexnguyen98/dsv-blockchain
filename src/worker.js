@@ -1,7 +1,7 @@
 const { parentPort } = require('worker_threads');
 const crypto = require('crypto');
 
-const DIFICULITY = 2;
+const DIFICULITY = 6;
 
 parentPort.once('message', (message) => {
   const payload = message;

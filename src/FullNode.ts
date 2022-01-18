@@ -37,10 +37,6 @@ class FullNode {
       this.pool.broadcastBlock(block);
     });
 
-    this.pool.on('stop', () => {
-      this.miner.stopMining();
-    });
-
     this.wallet.on('tx', (tx) => {
       this.pool.broadcastTXs([tx]);
       this.txpool.add(tx);

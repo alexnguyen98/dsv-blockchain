@@ -8,6 +8,7 @@ export enum PACKET_TYPES {
   TX = 'TX',
   BLOCK = 'BLOCK',
   GETBLOCKS = 'GETBLOCKS',
+  RESYNC = 'RESYNC',
 }
 
 export type Packet = {

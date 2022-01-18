@@ -58,10 +58,10 @@ declare class Pool extends EventEmitter {
     handleTX(peer: Peer, payload: any): void;
     handleBlock(peer: Peer, payload: any): void;
     handleGetBlock(peer: Peer, payload: string): void;
+    handleResync(): void;
     startRefillClock(): void;
     stopRefillClock(): void;
     broadcastTXs(txs: Transaction[]): void;
     broadcastBlock(block: Block): void;
-    resyncBlocks(): void;
 }
 export default Pool;

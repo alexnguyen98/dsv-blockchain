@@ -44,19 +44,13 @@ class Chain extends EventEmitter {
         });
         return balance;
     }
-    add(block) {
-        if (block.height === this.blocks.length &&
-            block.previousHash === this.getLatestBlock().previousHash) {
-            if (block.timestamp < this.getLatestBlock().timestamp) {
-                this.blocks[this.blocks.length - 1] = block;
-            }
-            else if (block.timestamp === this.getLatestBlock().timestamp) {
-                console.log('FORKKKK');
-            }
+    add(block, peer) {
+        if (block.previousHash === this.getLatestBlock().previousHash) {
+            console.log('fork situation');
+            return;
         }
-        else {
-            this.blocks.push(block);
-        }
+        this.blocks.push(block);
+        this.emit('stop');
     }
     getBlock(hash) {
         return this.blocks.find((block) => block.hash === hash);
@@ -66,6 +60,9 @@ class Chain extends EventEmitter {
     }
     handleBlock(block) {
         this.blocks.push(block);
+    }
+    resync() {
+        this.blocks = [Block_1.default.createGenesisBlock()];
     }
 }
 exports.default = Chain;

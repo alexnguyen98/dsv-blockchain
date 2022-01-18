@@ -295,6 +295,10 @@ class Pool extends EventEmitter {
         this.logger.debug('Recieved GETBLOCKS message');
         this.handleGetBlock(peer, packet.payload);
         break;
+      case PACKET_TYPES.RESYNC:
+        this.logger.debug('Recieved RESYNC message');
+        this.handleResync();
+        break;
     }
   }
 
@@ -495,12 +499,17 @@ class Pool extends EventEmitter {
       return;
     }
 
-    if (block.height === this.chain.blocks.length + 1) {
-      this.emit('stop');
+    // Added block totally out of sync, force to resync
+    if (
+      block.previousHash !== this.chain.getLatestBlock().hash &&
+      block.previousHash !== this.chain.getLatestBlock().previousHash
+    ) {
+      peer.send({ type: PACKET_TYPES.RESYNC });
+      return;
     }
 
-    this.logger.debug('Recieved blocks');
-    this.chain.add(block);
+    this.txpool.flushPending(block);
+    this.chain.add(block, peer);
   }
 
   /**
@@ -528,6 +537,21 @@ class Pool extends EventEmitter {
       this.logger.debug('Sending INV message for block sync');
       peer.send({ type: PACKET_TYPES.INV, payload: inv });
     }
+  }
+
+  /**
+   * Ask a random peer for new blocks to fix the chain
+   */
+  handleResync() {
+    const peer = this.peers[Math.floor(Math.random() * this.peers.size)];
+    this.logger.debug(
+      `Resync - sending GETBLOCKS packet to ${peer.addr.ip}:${peer.addr.port}`,
+    );
+    this.chain.resync();
+    peer.send({
+      type: PACKET_TYPES.GETBLOCKS,
+      payload: this.chain.getLatestBlock().hash,
+    });
   }
 
   /**
@@ -566,21 +590,6 @@ class Pool extends EventEmitter {
 
     this.peers.forEach((peer) => {
       peer.broadcastBlock([block]);
-    });
-  }
-
-  /**
-   * Ask a random peer for new blocks to fix the chain
-   */
-  resyncBlocks() {
-    const peer = this.peers[Math.floor(Math.random() * this.peers.size)];
-
-    this.logger.debug(
-      `Resync - sending GETBLOCKS packet to ${peer.addr.ip}:${peer.addr.port}`,
-    );
-    peer.send({
-      type: PACKET_TYPES.GETBLOCKS,
-      payload: this.chain.getLatestBlock().hash,
     });
   }
 }

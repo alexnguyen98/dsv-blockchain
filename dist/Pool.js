@@ -202,6 +202,10 @@ class Pool extends EventEmitter {
                 this.logger.debug('Recieved GETBLOCKS message');
                 this.handleGetBlock(peer, packet.payload);
                 break;
+            case Packet_1.PACKET_TYPES.RESYNC:
+                this.logger.debug('Recieved RESYNC message');
+                this.handleResync();
+                break;
         }
     }
     handleAddr(peer, payload) {
@@ -327,11 +331,13 @@ class Pool extends EventEmitter {
             peer.destroy();
             return;
         }
-        if (block.height === this.chain.blocks.length + 1) {
-            this.emit('stop');
+        if (block.previousHash !== this.chain.getLatestBlock().hash &&
+            block.previousHash !== this.chain.getLatestBlock().previousHash) {
+            peer.send({ type: Packet_1.PACKET_TYPES.RESYNC });
+            return;
         }
-        this.logger.debug('Recieved blocks');
-        this.chain.add(block);
+        this.txpool.flushPending(block);
+        this.chain.add(block, peer);
     }
     handleGetBlock(peer, payload) {
         if (!this.chain.has(payload))
@@ -352,6 +358,15 @@ class Pool extends EventEmitter {
             peer.send({ type: Packet_1.PACKET_TYPES.INV, payload: inv });
         }
     }
+    handleResync() {
+        const peer = this.peers[Math.floor(Math.random() * this.peers.size)];
+        this.logger.debug(`Resync - sending GETBLOCKS packet to ${peer.addr.ip}:${peer.addr.port}`);
+        this.chain.resync();
+        peer.send({
+            type: Packet_1.PACKET_TYPES.GETBLOCKS,
+            payload: this.chain.getLatestBlock().hash,
+        });
+    }
     startRefillClock() {
         (0, console_1.assert)(this.refillClock == null, 'Refill clock already started');
         this.refillClock = setInterval(() => this.refillPeers(), REFILL_INTERVAL);
@@ -371,14 +386,6 @@ class Pool extends EventEmitter {
         this.logger.debug('Broadcasting blocks');
         this.peers.forEach((peer) => {
             peer.broadcastBlock([block]);
-        });
-    }
-    resyncBlocks() {
-        const peer = this.peers[Math.floor(Math.random() * this.peers.size)];
-        this.logger.debug(`Resync - sending GETBLOCKS packet to ${peer.addr.ip}:${peer.addr.port}`);
-        peer.send({
-            type: Packet_1.PACKET_TYPES.GETBLOCKS,
-            payload: this.chain.getLatestBlock().hash,
         });
     }
 }

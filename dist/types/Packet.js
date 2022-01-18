@@ -12,5 +12,6 @@ var PACKET_TYPES;
     PACKET_TYPES["TX"] = "TX";
     PACKET_TYPES["BLOCK"] = "BLOCK";
     PACKET_TYPES["GETBLOCKS"] = "GETBLOCKS";
+    PACKET_TYPES["RESYNC"] = "RESYNC";
 })(PACKET_TYPES = exports.PACKET_TYPES || (exports.PACKET_TYPES = {}));
 //# sourceMappingURL=Packet.js.map

@@ -28,6 +28,9 @@ class Miner extends EventEmitter {
             this.txpool.on('tx', () => {
                 this.handleTx();
             });
+            this.chain.on('stop', () => {
+                this.stopMining();
+            });
         });
     }
     handleTx() {
@@ -60,6 +63,7 @@ class Miner extends EventEmitter {
             this.logger.error('Miner is already mining');
             return;
         }
+        this.logger.debug('Mining block');
         this.mining = true;
         this.block = block;
         this.createWorker();
@@ -81,11 +85,22 @@ class Miner extends EventEmitter {
         this.block.nonce = nonce;
         this.chain.add(this.block);
         this.emit('block', this.block);
+        this.block = null;
+        if (this.txpool.pending.size)
+            this.handleTx();
     }
     stopMining() {
         if (this.mining || this.worker) {
             this.logger.debug('Stopping worker');
             this.stopWorker();
+            if (this.block && this.block.txs.length === 1) {
+                this.logger.debug('Reatempting to mine coinbase block');
+                this.mineCoinbaseBlock();
+            }
+            else if (this.txpool.pending.size) {
+                this.logger.debug('Reatempting to mine a block');
+                this.handleTx();
+            }
         }
     }
     stopWorker() {

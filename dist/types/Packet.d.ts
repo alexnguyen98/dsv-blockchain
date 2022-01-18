@@ -7,7 +7,8 @@ export declare enum PACKET_TYPES {
     GETDATA = "GETDATA",
     TX = "TX",
     BLOCK = "BLOCK",
-    GETBLOCKS = "GETBLOCKS"
+    GETBLOCKS = "GETBLOCKS",
+    RESYNC = "RESYNC"
 }
 export declare type Packet = {
     type: PACKET_TYPES;
