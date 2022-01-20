@@ -15,12 +15,12 @@ const FullNode_1 = require("./FullNode");
 const Address_1 = require("./Address");
 const rl = readline.createInterface({ input: process_1.stdin, output: process_1.stdout, terminal: false });
 let fullNode;
+const options = {
+    id: '',
+    addr: null,
+    nodes: [],
+};
 const processArguments = () => __awaiter(void 0, void 0, void 0, function* () {
-    const options = {
-        id: '',
-        addr: null,
-        nodes: [],
-    };
     process.argv.forEach((arg) => {
         if (arg.includes('--addr=')) {
             const split = arg.replace('--addr=', '').split(':');
@@ -32,7 +32,8 @@ const processArguments = () => __awaiter(void 0, void 0, void 0, function* () {
         }
         else if (arg.includes('--connect=')) {
             const split = arg.replace('--connect=', '').split(',');
-            split === null || split === void 0 ? void 0 : split.forEach((s) => {
+            split === null || split === void 0 ? void 0 : split.forEach((i) => {
+                const s = i.split(':');
                 const ip = s[0];
                 const port = parseInt(s[1]);
                 if (!port || !ip)
@@ -151,7 +152,7 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         processArguments();
-        if (fullNode.pool.addrMan.addr.toString() === '127.0.0.1:3000') {
+        if (options.addr.toString() === '127.0.0.1:3000') {
             init();
         }
         else {
