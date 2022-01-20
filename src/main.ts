@@ -7,14 +7,13 @@ import Address from './Address';
 const rl = readline.createInterface({ input, output, terminal: false });
 
 let fullNode: FullNode;
+const options: Options = {
+  id: '',
+  addr: null,
+  nodes: [],
+};
 
 const processArguments = async () => {
-  const options: Options = {
-    id: '',
-    addr: null,
-    nodes: [],
-  };
-
   process.argv.forEach((arg) => {
     if (arg.includes('--addr=')) {
       const split = arg.replace('--addr=', '').split(':');
@@ -26,7 +25,8 @@ const processArguments = async () => {
       options.addr = new Address(ip, port);
     } else if (arg.includes('--connect=')) {
       const split = arg.replace('--connect=', '').split(',');
-      split?.forEach((s) => {
+      split?.forEach((i) => {
+        const s = i.split(':');
         const ip = s[0];
         const port = parseInt(s[1]);
 
@@ -172,7 +172,7 @@ const main = async () => {
   try {
     processArguments();
 
-    if (fullNode.pool.addrMan.addr.toString() === '127.0.0.1:3000') {
+    if (options.addr.toString() === '127.0.0.1:3000') {
       // Init seed node sooner
       init();
     } else {
