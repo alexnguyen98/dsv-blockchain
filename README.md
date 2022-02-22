@@ -4,9 +4,9 @@ A small version of the bitcoin protocol for the subject DSV, university CVUT
 
 ## Prerequisite
 
-Theme: Blockchain
-Connection: websockets
-Algorithm: Proof of work and Consensus
+- Theme: Blockchain
+- Connection: Websockets
+- Algorithm: Proof of work and Consensus
 
 ## Getting Started
 
